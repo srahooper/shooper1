@@ -1,0 +1,112 @@
+org: srahooper
+app: shooper1
+service: shooper1
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  environment:
+    DYNAMODB_CUSTOMER_TABLE: ${self:service}-customerTable-${sls:stage}
+    DYNAMODB_ACCOUNT_TABLE: ${self:service}-accountTable-${sls:stage}
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - "dynamodb:PutItem"
+        - "dynamodb:GetItem"
+        - "dynamodb:Get*"
+        - "dynamodb:Scan*"
+        - "dynamodb:UpdateItem"
+        - "dynamodb:DeleteItem"
+        - "dynamodb:BatchGetItem"
+        - "dynamodb:BatchWriteItem"
+        - "dynamodb:ConditionCheckItem"
+        - "dynamodb:ListTables"
+        - "dynamodb:DescribeTable"
+        - "dynamodb:Query"
+        - "dynamodb:UpdateTable"
+      Resource: arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:service}-customerTable-${sls:stage}
+    - Effect: "Allow"
+      Action:
+        - "dynamodb:PutItem"
+        - "dynamodb:GetItem"
+        - "dynamodb:Get*"
+        - "dynamodb:Scan*"
+        - "dynamodb:UpdateItem"
+        - "dynamodb:DeleteItem"
+        - "dynamodb:BatchGetItem"
+        - "dynamodb:BatchWriteItem"
+        - "dynamodb:ConditionCheckItem"
+        - "dynamodb:DescribeTable"
+        - "dynamodb:ListTables"
+        - "dynamodb:Query"
+        - "dynamodb:UpdateTable"
+      Resource: arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:service}-accountTable-${sls:stage}
+functions:
+  createCustomer:
+    handler: createCustomer.createCustomer
+    events:
+      - httpApi:
+          path: /
+          method: post
+  deleteCustomer:
+    handler: deleteCustomer.deleteCustomer
+    events:
+      - httpApi:
+          path: /deleteCustomer
+          method: post       
+  updateCustomer:
+    handler: updateCustomer.updateCustomer
+    events:
+      - httpApi:
+          path: /updateCustomer
+          method: post   
+  getCustomers:
+    handler: getCustomers.getCustomers
+    events: 
+      - httpApi:
+          path: /
+          method: get        
+  getCustomer:
+    handler: getCustomer.getCustomer
+    events: 
+      - httpApi:
+          path: /getCustomer
+          method: get
+  queryCustomers:
+    handler: queryCustomers.queryCustomers
+    events: 
+      - httpApi:
+          path: /queryCustomers
+          method: get  
+  helloWorld:
+    handler: helloWorld.helloWorld
+    events: 
+      - httpApi:
+          path: /helloWorld
+          method: get    
+resources:
+  Resources:
+    CustomerTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: primary_key
+            AttributeType: S
+        BillingMode: PAY_PER_REQUEST
+        KeySchema:
+          - AttributeName: primary_key
+            KeyType: HASH
+        TableName: ${self:service}-customerTable-${sls:stage}
+    AccountTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: primary_key
+            AttributeType: S
+        BillingMode: PAY_PER_REQUEST
+        KeySchema:
+          - AttributeName: primary_key
+            KeyType: HASH
+        TableName: ${self:service}-accountTable-${sls:stage}
+        
